@@ -453,6 +453,7 @@ class TemplateMixin(object):
 
     _cached = (
         'get_amplitudes',
+        '_get_ampli',
         'get_spike_template_amplitudes',
         'get_spike_template_features',
     )
@@ -475,10 +476,19 @@ class TemplateMixin(object):
             out['template_feature'] = self.get_spike_template_features
         return out
 
+
+
     def get_amplitudes(self, cluster_id, load_all=False):
         """Return the spike amplitudes found in `amplitudes.npy`, for a given cluster."""
         spike_ids = self._get_amplitude_spike_ids(cluster_id, load_all=load_all)
         return self.model.amplitudes[spike_ids]
+
+    def _get_ampli(self, spike_ids):
+
+        data = self.get_amplitudes(spike_ids)
+
+        return Bunch(
+            data=data, spike_ids=spike_ids)
 
     def get_template_counts(self, cluster_id):
         """Return a histogram of the number of spikes in each template for a given cluster."""

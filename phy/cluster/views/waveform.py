@@ -511,3 +511,4 @@ class WaveformView(ScalingMixin, ManualClusteringView):
             self.waveforms_types.set('mean_waveforms')
             logger.debug("Switch to mean waveforms.")
             self.plot()
+

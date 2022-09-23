@@ -826,3 +826,4 @@ class GUI(QMainWindow):
             self.restoreGeometry((gs['geometry']))
         if gs.get('state', None):
             self.restoreState((gs['state']))
+

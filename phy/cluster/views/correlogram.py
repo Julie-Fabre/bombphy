@@ -8,15 +8,18 @@
 # -----------------------------------------------------------------------------
 
 import logging
+import re
 
 import numpy as np
 
 from phy.plot.transform import Scale
 from phy.plot.visuals import HistogramVisual, LineVisual, TextVisual
 from phylib.io.array import _clip
-from phylib.utils import Bunch
+from phylib.utils import Bunch, emit
 from phy.utils.color import selected_cluster_color, _override_hsv, add_alpha
 from .base import ManualClusteringView, ScalingMixin
+from phy.plot.transform import Range
+
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +79,8 @@ class CorrelogramView(ScalingMixin, ManualClusteringView):
         self.local_state_attrs += ()
         self.canvas.set_layout(layout='grid')
 
+        self.rpv_value = [1]
+
         # Outside margin to show labels.
         self.canvas.gpu_transforms.add(Scale(.9))
 
@@ -99,6 +104,9 @@ class CorrelogramView(ScalingMixin, ManualClusteringView):
 
         self.text_visual = TextVisual(color=(1., 1., 1., 1.))
         self.canvas.add_visual(self.text_visual)
+
+
+
 
     # -------------------------------------------------------------------------
     # Internal methods
@@ -138,12 +146,12 @@ class CorrelogramView(ScalingMixin, ManualClusteringView):
             ylim=bunch.data_bounds[3], box_index=bunch.pair_index)
 
         # Plot the firing rate.
-        gray = (.25, .25, .25, 1.)
+        orange = (1, .5, 0, 1.)
         if bunch.firing_rate is not None:
             # Line.
             pos = np.array([[0, bunch.firing_rate, bunch.data_bounds[2], bunch.firing_rate]])
             self.line_visual.add_batch_data(
-                pos=pos, color=gray, data_bounds=bunch.data_bounds, box_index=bunch.pair_index)
+                pos=pos, color=orange, data_bounds=bunch.data_bounds, box_index=bunch.pair_index)
             # # Text.
             # self.text_visual.add_batch_data(
             #     pos=[bunch.data_bounds[2], bunch.firing_rate],
@@ -159,7 +167,23 @@ class CorrelogramView(ScalingMixin, ManualClusteringView):
         ylim = bunch.data_bounds[3]
         pos = np.array([[xrp0, 0, xrp0, ylim], [xrp1, 0, xrp1, ylim]])
         self.line_visual.add_batch_data(
-            pos=pos, color=gray, data_bounds=bunch.data_bounds, box_index=bunch.pair_index)
+            pos=pos, color=orange, data_bounds=bunch.data_bounds, box_index=bunch.pair_index)
+
+
+    def set_rpv(self, rpv_value):
+        """Change the rpv displayed dynamically.
+
+        Parameters
+        ----------
+
+
+        """
+        #n = len(rpv_value)
+        #print("yo")
+        # Display the cluster ids in the subplots.
+        #for k in range(n):
+        self.rpv_value = rpv_value
+        #print(range(n))
 
     def _plot_labels(self):
         n = len(self.cluster_ids)
@@ -180,6 +204,16 @@ class CorrelogramView(ScalingMixin, ManualClusteringView):
                 data_bounds=None,
                 box_index=(n - 1, k),
             )
+            self.text_visual.add_batch_data(
+                pos=[-0.5, 1],
+                text="frac. rpv : " + str(np.round(self.rpv_value[self.cluster_ids[k]][1],decimals=2)),
+                anchor=[0, -1.25],
+                data_bounds=None,
+                box_index=(n - 1, k),
+            )
+
+
+
 
         # # Display the window size in the bottom right subplot.
         # self.text_visual.add_batch_data(
